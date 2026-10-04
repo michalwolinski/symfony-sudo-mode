@@ -1,0 +1,174 @@
+== the trust resolver, called directly ==
+  PASS  default recent window is 2h
+  PASS  default very recent window is 5min
+  PASS  just logged in: recently
+  PASS  just logged in: very recently
+  PASS  10 min after login: recently
+  PASS  10 min after login: very recently
+  PASS  3h after login: recently
+  PASS  3h after login: very recently
+  PASS  exactly at the 7200s boundary: recently
+  PASS  one second past 7200s: recently
+  PASS  no proof at all: recently
+  PASS  no proof at all: very recently
+  PASS  remember-me token with fresh proofs: recently
+  PASS  remember-me token with fresh proofs: very recently
+  PASS  password 3h ago + hardware key 1min ago: recently
+  PASS  password 3h ago + hardware key 1min ago: very recently
+  PASS  hardware key 1h ago + password now: very recently
+
+== through the firewall ==
+[info] Matched route "app_login".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[info] Authenticator successful!
+[debug] The "Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator" authenticator set the response. Any later authenticator will not be called
+[debug] Stored the security token in the session.
+  POST /login                 -> 302 http://localhost/
+[info] Matched route "account_delete".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Authenticator does not support the request.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[debug] Stored the security token in the session.
+  POST /account/delete        -> 200 
+  PASS  fresh login grants the very recent action
+[info] Matched route "account_email".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Authenticator does not support the request.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[debug] Stored the security token in the session.
+  GET  /account/email         -> 200 
+  PASS  fresh login grants the recent action
+  -- clock advanced by 10 minutes --
+[info] Matched route "account_email".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Authenticator does not support the request.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[debug] Stored the security token in the session.
+  GET  /account/email         -> 200 
+  PASS  10 min later, the recent action still passes
+[info] Matched route "account_delete".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Authenticator does not support the request.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[debug] Starting a re-authentication for "IS_AUTHENTICATED_VERY_RECENTLY".
+[debug] Stored the security token in the session.
+  POST /account/delete        -> 302 /confirm-password
+  PASS  10 min later, the very recent action is redirected
+  PASS  ...to the confirm page
+  PASS  ...naming the attribute it wants proved
+[info] Matched route "app_login".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[info] Authenticator successful!
+[debug] The "Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator" authenticator set the response. Any later authenticator will not be called
+[debug] Stored the security token in the session.
+  POST /login                 -> 302 http://localhost/
+  PASS  after re-authenticating, a POST target is not replayed
+[info] Matched route "account_delete".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Authenticator does not support the request.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[debug] Stored the security token in the session.
+  POST /account/delete        -> 200 
+  PASS  the action has to be submitted again, and now runs
+  -- clock advanced by 3 hours --
+[info] Matched route "account_api_keys".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Authenticator does not support the request.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[debug] Starting a re-authentication for "IS_AUTHENTICATED_VERY_RECENTLY".
+[debug] Stored the security token in the session.
+  GET  /account/api-keys      -> 302 /confirm-password
+  PASS  3h later, a safe method is redirected too
+  PASS  ...to the confirm page
+[info] Matched route "app_login".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[info] Authenticator successful!
+[debug] The "Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator" authenticator set the response. Any later authenticator will not be called
+[debug] Stored the security token in the session.
+  POST /login                 -> 302 http://localhost/account/api-keys
+  PASS  after re-authenticating, a GET target is replayed
+[info] Matched route "account_api_keys".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Authenticator does not support the request.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[debug] Stored the security token in the session.
+  GET  /account/api-keys      -> 200 
+  PASS  and the page now loads
+  -- clock advanced by 3 more hours --
+[info] Matched route "admin_api_key".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Authenticator does not support the request.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[info] User Deprecated: Since symfony/security-core 8.2: Passing more than one Security attribute to "Symfony\Component\Security\Core\Authorization\AccessDecisionManager::decide()" is deprecated, pass a single attribute instead. For an "access_control" rule, move the roles to "allow_if" or to the role hierarchy. The "$allowMultipleAttributes" argument will be removed in 9.0.
+[debug] Access denied, the user is neither anonymous, nor remember-me, nor asked to re-authenticate.
+[warning] Uncaught PHP Exception Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException: "Access Denied. The user is not authenticated recently enough. The user doesn't have ROLE_ADMIN." at ExceptionListener.php line 139
+[debug] Stored the security token in the session.
+  POST /admin/api-key         -> 403 
+  PASS  two attributes in the rule: bare 403, no step-up
+  PASS  ...and no attribute is asked for
+[info] Matched route "account_email".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Authenticator does not support the request.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[debug] Starting a re-authentication for "IS_AUTHENTICATED_RECENTLY".
+[debug] Stored the security token in the session.
+  GET  /account/email         -> 302 /confirm-password
+  PASS  one attribute for the same user and staleness: step-up offered
+  PASS  ...naming the attribute
+[info] Matched route "app_login".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[info] Authenticator successful!
+[debug] The "Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator" authenticator set the response. Any later authenticator will not be called
+[debug] Stored the security token in the session.
+  POST /login                 -> 302 http://localhost/account/email
+  -- admin, authenticated 3 hours ago --
+[info] Matched route "account_email".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Authenticator does not support the request.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[debug] Starting a re-authentication for "IS_AUTHENTICATED_RECENTLY".
+[debug] Stored the security token in the session.
+  GET  /account/email         -> 302 /confirm-password
+  PASS  a stale admin still gets a step-up on a freshness-only check
+[info] Matched route "admin_billing".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Authenticator does not support the request.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[debug] Starting a re-authentication for "IS_AUTHENTICATED_RECENTLY".
+[debug] Stored the security token in the session.
+  POST /admin/billing         -> 302 /confirm-password
+  NOTE  role + freshness as two #[IsGranted] attributes -> 302 /confirm-password
+
+all 34 checks passed

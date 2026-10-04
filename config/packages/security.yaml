@@ -1,0 +1,36 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    providers:
+        demo_users:
+            memory:
+                users:
+                    michal:
+                        password: '$2y$12$7orpnI9qsWsTeLAshDd9xusN/gjlvW8QqIE36P/I6BrMX58oPD/py'
+                        roles: ['ROLE_USER']
+                    admin:
+                        password: '$2y$12$7orpnI9qsWsTeLAshDd9xusN/gjlvW8QqIE36P/I6BrMX58oPD/py'
+                        roles: ['ROLE_ADMIN']
+
+    # Both are top-level security options, not firewall options. Defaults are
+    # 2 * 3600 and 5 * 60, which is what the demo would use if these were absent.
+    recent_authentication_lifetime: 7200
+    very_recent_authentication_lifetime: 300
+
+    firewalls:
+        main:
+            lazy: true
+            provider: demo_users
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: false
+            re_authentication_entry_point: App\Security\ConfirmPasswordEntryPoint
+
+    access_control:
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/confirm-password, roles: PUBLIC_ACCESS }
+        # Two attributes in one check: denied as a whole, so the step-up entry
+        # point is never consulted and the user gets a plain 403.
+        - { path: ^/admin/api-key, roles: [IS_AUTHENTICATED_RECENTLY, ROLE_ADMIN] }

@@ -1,0 +1,16 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude: '../src/Kernel.php'
+
+    App\Clock\TestClock:
+        arguments: ['%kernel.project_dir%/var/clock']
+
+    # security.authentication.trust_resolver is wired with service('clock')->nullOnInvalid(),
+    # so controlling this service is enough to control what "now" means for the
+    # sudo windows. Changing the trust resolver class is a separate concern.
+    clock: '@App\Clock\TestClock'
