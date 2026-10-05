@@ -194,5 +194,8 @@
   POST /admin/reports         -> 302 /confirm-password
   PASS  allow_if "freshness and role" -> step-up offered
   PASS  ...naming the freshness check
+  -- why the deprecated rule's other suggestion, the role hierarchy, cannot help here --
+  PASS  a hierarchy does decide a real role it reaches
+  PASS  but abstains on the freshness attribute in the same voter
 
-all 40 checks passed
+all 42 checks passed

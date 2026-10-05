@@ -89,7 +89,15 @@ Read from the output, not from the documentation:
   its own check, and the framework logs
   `Starting a re-authentication for "IS_AUTHENTICATED_RECENTLY"`;
 - two separate `#[IsGranted]` attributes, one for freshness and one for a role,
-  behave the same way for the same reason.
+  behave the same way for the same reason. Neither is exposed to the
+  deprecation, because each attribute gets its own `decide()` call;
+- the deprecation's other suggestion, "or to the role hierarchy", cannot express
+  this check at all. A hierarchy expands *role names* into other *role names*,
+  and the role voter skips every attribute that does not start with `ROLE_`,
+  while `IS_AUTHENTICATED_RECENTLY` belongs to `AuthenticatedVoter`. The suite
+  asserts both halves in the same voter, so the abstention is not just a voter
+  that never grants: `ROLE_SUPER_ADMIN` is granted through the mapping, and the
+  freshness attribute is abstained on.
 
 All three shapes run side by side against the same stale administrator, so the
 comparison is one line each: `200` for the roles list, `302 /confirm-password`

@@ -10,6 +10,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\AuthenticationTrustResolver;
 use Symfony\Component\Security\Core\Authentication\Token\RememberMeToken;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\Authorization\Voter\RoleHierarchyVoter;
+use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
+use Symfony\Component\Security\Core\Role\RoleHierarchy;
 use Symfony\Component\Security\Core\User\InMemoryUser;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
 
@@ -158,6 +161,12 @@ expect('roles: [IS_AUTHENTICATED_RECENTLY, ROLE_ADMIN] -> 200: the list is an OR
 expect('...and no attribute is asked for', $requestedAttribute(), null);
 expect('allow_if "freshness and role" -> step-up offered', $request('POST', '/admin/reports')->getStatusCode(), 302);
 expect('...naming the freshness check', $requestedAttribute(), 'IS_AUTHENTICATED_RECENTLY');
+
+echo "  -- why the deprecated rule's other suggestion, the role hierarchy, cannot help here --\n";
+$hierarchyVoter = new RoleHierarchyVoter(new RoleHierarchy(['ROLE_ADMIN' => ['ROLE_SUPER_ADMIN']]));
+$adminToken = new UsernamePasswordToken(new InMemoryUser('admin', 'sudo', ['ROLE_ADMIN']), 'main', ['ROLE_ADMIN']);
+expect('a hierarchy does decide a real role it reaches', $hierarchyVoter->vote($adminToken, null, ['ROLE_SUPER_ADMIN']), VoterInterface::ACCESS_GRANTED);
+expect('but abstains on the freshness attribute in the same voter', $hierarchyVoter->vote($adminToken, null, ['IS_AUTHENTICATED_RECENTLY']), VoterInterface::ACCESS_ABSTAIN);
 
 echo "\n".($failures ? "$failures of $checks checks FAILED\n" : "all $checks checks passed\n");
 
