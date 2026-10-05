@@ -32,5 +32,11 @@ security:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/confirm-password, roles: PUBLIC_ACCESS }
         # Two attributes in one check: denied as a whole, so the step-up entry
-        # point is never consulted and the user gets a plain 403.
+        # point is never consulted and the user gets a plain 403. This is the
+        # deprecated shape - deciding several attributes at once was deprecated
+        # in 8.2 and the $allowMultipleAttributes argument goes away in 9.0.
         - { path: ^/admin/api-key, roles: [IS_AUTHENTICATED_RECENTLY, ROLE_ADMIN] }
+        # The supported replacement: the same two conditions as one expression,
+        # so the freshness check is decidable on its own and a re-authentication
+        # can be offered. That is what the deprecation tells you to migrate to.
+        - { path: ^/admin/reports, allow_if: "is_granted('IS_AUTHENTICATED_RECENTLY') and is_granted('ROLE_ADMIN')" }

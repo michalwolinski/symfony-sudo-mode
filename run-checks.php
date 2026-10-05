@@ -150,7 +150,14 @@ echo "  -- admin, authenticated 3 hours ago --\n";
 expect('a stale admin still gets a step-up on a freshness-only check', $request('GET', '/account/email')->getStatusCode(), 302);
 
 $response = $request('POST', '/admin/billing');
-printf("  NOTE  role + freshness as two #[IsGranted] attributes -> %d %s\n", $response->getStatusCode(), $locationPath($response) ?? '');
+expect('role + freshness as two #[IsGranted]: step-up offered', $response->getStatusCode(), 302);
+expect('...naming the freshness check', $requestedAttribute(), 'IS_AUTHENTICATED_RECENTLY');
+
+echo "  -- the same freshness AND role, three ways, stale admin --\n";
+expect('roles: [IS_AUTHENTICATED_RECENTLY, ROLE_ADMIN] -> 200: the list is an OR, so the role alone grants', $request('POST', '/admin/api-key')->getStatusCode(), 200);
+expect('...and no attribute is asked for', $requestedAttribute(), null);
+expect('allow_if "freshness and role" -> step-up offered', $request('POST', '/admin/reports')->getStatusCode(), 302);
+expect('...naming the freshness check', $requestedAttribute(), 'IS_AUTHENTICATED_RECENTLY');
 
 echo "\n".($failures ? "$failures of $checks checks FAILED\n" : "all $checks checks passed\n");
 

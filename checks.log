@@ -169,6 +169,30 @@
 [debug] Starting a re-authentication for "IS_AUTHENTICATED_RECENTLY".
 [debug] Stored the security token in the session.
   POST /admin/billing         -> 302 /confirm-password
-  NOTE  role + freshness as two #[IsGranted] attributes -> 302 /confirm-password
+  PASS  role + freshness as two #[IsGranted]: step-up offered
+  PASS  ...naming the freshness check
+  -- the same freshness AND role, three ways, stale admin --
+[info] Matched route "admin_api_key".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Authenticator does not support the request.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[info] User Deprecated: Since symfony/security-core 8.2: Passing more than one Security attribute to "Symfony\Component\Security\Core\Authorization\AccessDecisionManager::decide()" is deprecated, pass a single attribute instead. For an "access_control" rule, move the roles to "allow_if" or to the role hierarchy. The "$allowMultipleAttributes" argument will be removed in 9.0.
+[debug] Stored the security token in the session.
+  POST /admin/api-key         -> 200 
+  PASS  roles: [IS_AUTHENTICATED_RECENTLY, ROLE_ADMIN] -> 200: the list is an OR, so the role alone grants
+  PASS  ...and no attribute is asked for
+[info] Matched route "admin_reports".
+[debug] Checking for authenticator support.
+[debug] Checking support on authenticator.
+[debug] Authenticator does not support the request.
+[debug] Read existing security token from the session.
+[debug] User was reloaded from a user provider.
+[debug] Starting a re-authentication for "IS_AUTHENTICATED_RECENTLY".
+[debug] Stored the security token in the session.
+  POST /admin/reports         -> 302 /confirm-password
+  PASS  allow_if "freshness and role" -> step-up offered
+  PASS  ...naming the freshness check
 
-all 34 checks passed
+all 40 checks passed

@@ -5,10 +5,11 @@
     "license": "MIT",
     "require": {
         "php": ">=8.4",
+        "symfony/clock": "^8.1",
+        "symfony/expression-language": "8.2.x-dev",
         "symfony/framework-bundle": "8.2.x-dev",
         "symfony/security-bundle": "8.2.x-dev",
-        "symfony/yaml": "^8.1",
-        "symfony/clock": "^8.1"
+        "symfony/yaml": "^8.1"
     },
     "require-dev": {
         "symfony/browser-kit": "^8.1"

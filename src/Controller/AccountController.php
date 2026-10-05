@@ -57,6 +57,16 @@ final class AccountController
         return new Response("changed the billing details\n");
     }
 
+    /**
+     * The supported replacement for the multi-attribute rule on /admin/api-key:
+     * the same two conditions as one allow_if expression, in security.yaml.
+     */
+    #[Route('/admin/reports', name: 'admin_reports', methods: ['POST'])]
+    public function exportReports(): Response
+    {
+        return new Response("exported the reports\n");
+    }
+
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
     public function login(): Response
     {
